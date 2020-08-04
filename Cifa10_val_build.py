@@ -18,9 +18,7 @@ def val_set_select(test_labels, num):
     label_choose_index = []
     for class_number in range(10):
 
-        print(class_number)
         ss=array.count(class_number)
-        print(ss)
         first_pos=0
         find_out=[]
         for i in range(array.count(class_number)):

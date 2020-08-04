@@ -6,16 +6,13 @@ import numpy as np
 import torch
 from PIL import Image
 import torch.utils.data as Data
-
+import torchvision
 from Uniform_noise import *
 from Flip_random_noise import *
 from Flip_to_one_noise import *
 from Cifa10_val_build import *
 
-# sample_number = 50
-# test_data1, test_labels1 = get_data(False, 0, 0)
-# Val_choose = val_set_select(test_labels1, sample_number)
-# Val_choose = np.random.shuffle(Val_choose)
+
 
 def unpickle(file):
     import pickle
@@ -24,17 +21,17 @@ def unpickle(file):
     return dict
 
 
-data_root = '/home/wzhen/Database/Cifar/'
 
 def get_data(train, noise_type,  noisy_ratio):
 
+    base_dataset = torchvision.datasets.CIFAR10('./data/', train=True, download=True)
 
     data = None
     labels = None
     label_1s = None
     if train == True:
         for i in range(1, 6):
-            batch = unpickle('/home/wzhen/Database/Cifar/cifar-10-batches-py/cifar-10-batches-py/data_batch_' + str(i))
+            batch = unpickle('./data/cifar-10-batches-py/data_batch_' + str(i))
             if i == 1:
                 data = batch[b'data']
             else:
@@ -56,7 +53,7 @@ def get_data(train, noise_type,  noisy_ratio):
             labels = flip_to_one_noise(labels_original, noisy_ratio)
 
     else:
-        batch = unpickle('/home/wzhen/Database/Cifar/cifar-10-batches-py/cifar-10-batches-py/test_batch')
+        batch = unpickle('./data/cifar-10-batches-py/test_batch')
         data = batch[b'data']
         labels = batch[b'labels']
 
@@ -78,11 +75,6 @@ transform = transforms.Compose([
 ])
 
 
-
-# sample_number = 50
-# test_data1, test_labels1 = get_data(False, 0, 0)
-# Val_choose = val_set_select(test_labels1, sample_number)
-# Val_choose = np.random.shuffle(Val_choose)
 
 class Cifar10_Dataset(Data.Dataset):
     def __init__(self, train=True, Val_choose=None, datas=None, lables=None, transform=None, target_transform=None, noise_type=None, noisy_ratio=None):
@@ -130,12 +122,10 @@ class Cifar10_Dataset(Data.Dataset):
 
 
 def Cifar10_Val_1(Val_choose, sample_number):
-    #sample_number = 50
-    # Val_choose = np.load('/home/wangzhen16b/Database/Cifar10/Cifar10_index/label_choose_index_500.npy')
 
 
     test_data1, test_labels1 = get_data(False, 0, 0)
-    # Val_choose = val_set_select(test_labels1, sample_number)
+
     np.random.shuffle(Val_choose)
     test_data1 = test_data1.reshape((10000, 3, 32, 32))
     val_data_NEW = torch.Tensor(sample_number *10,3,32,32)
@@ -163,6 +153,5 @@ if __name__ == '__main__':
         for noise_ratio in [10, 20, 30, 40]:
             train_datas, train_lables = get_data(True, noise_type,  noise_ratio)
             test_datas, test_lables = get_data(False, noise_type, noise_ratio)
-    # test_data, test_labels = get_data(True, 0, 0)
-    # a, b = Cifar10_Val_1()
+
             print('ok')

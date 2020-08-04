@@ -46,8 +46,6 @@ def build_model():
         net.cuda()
         torch.backends.cudnn.benchmark=True
 
-    #optimizer = torch.optim.Adam(net.parameters(), lr=hyperparameters['lr'])
-    # optimizer = torch.optim.SGD(net.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     return net
 
 
@@ -62,7 +60,7 @@ def train_warm_up(Val_choose, train_datas, train_lables,  test_datas, test_lable
     else:
         type = 'flip_to_one'
     ##########    load data  ##########################################
-    save_root = 'model_saved/Cifar10_warmup_CE_'+str(type)+str(ratio)+'.pth'
+    save_root = './Cifar10_warmup_CE_'+str(type)+str(ratio)+'.pth'
     print('noise ratio is '+ str(ratio)+'%')
     train_data = Cifar10_Dataset(True, Val_choose, train_datas, train_lables, transform, target_transform, noise_type=type, noisy_ratio=ratio)
     print('size of train_data:{}'.format(train_data.__len__()))
@@ -75,19 +73,14 @@ def train_warm_up(Val_choose, train_datas, train_lables,  test_datas, test_lable
     best_accuracy = 0
 
     plot_step = 100
-    for i in tqdm(range(20000)):
+    for i in tqdm(range(2000)):
         model.train()
-        # Line 2 get batch of data
-        image, labels = next(iter(train_loader))
-        # since validation data is small I just fixed them instead of building an iterator
-        # initialize a dummy network for the meta learning of the weights
 
-        # meta_net = torch.nn.DataParallel(meta_net, device_ids=list(range(3)))
+        image, labels = next(iter(train_loader))
+
 
         image = to_var(image, requires_grad=False)
         labels = to_var(labels, requires_grad=False)
-
-        # Lines 4 - 5 initial forward pass to compute the initial weighted loss
 
         pre = model(image)
 
@@ -101,33 +94,31 @@ def train_warm_up(Val_choose, train_datas, train_lables,  test_datas, test_lable
 
         if i % plot_step == 0:
             model.eval()
+            with torch.no_grad():
 
-            acc = []
-            pre_correct = 0.0
-            for itr, (test_img, test_label) in enumerate(test_loader):
-                test_img = to_var(test_img, requires_grad=False)
-                test_label = to_var(test_label, requires_grad=False)
+                acc = []
+                pre_correct = 0.0
+                for itr, (test_img, test_label) in enumerate(test_loader):
+                    test_img = to_var(test_img, requires_grad=False)
+                    test_label = to_var(test_label, requires_grad=False)
 
-                output = model(test_img)
-                pre = torch.max(output, 1)[1]
+                    output = model(test_img)
+                    pre = torch.max(output, 1)[1]
 
-                pre_correct = pre_correct + float(torch.sum(pre == test_label))
+                    pre_correct = pre_correct + float(torch.sum(pre == test_label))
 
-            #print('Cifar10_base_uniform_30P accuracy of test_data:{}'.format((pre_correct / float(10000)) * 100))
-            test_acc = (pre_correct / float(10000)) * 100
+                test_acc = (pre_correct / float(10000)) * 100
             if test_acc > best_accuracy:
                 best_accuracy = test_acc
                 torch.save(model.state_dict(),save_root)
-            #print('Cifar10_Baseline_uniform_30P _Best accuracy of test_data:{}'.format(best_accuracy))
+
             print('| Cifar10 ' + 'Baseline type: '+ str(type) + ' ratio:' + str(ratio)+ '% ' + 'Test Best_Test_Acc: %.2f%% Test_Acc@1: %.2f%%' % (best_accuracy, test_acc))
 
 
 def train_MLC(Val_choose, train_datas, train_lables,  test_datas, test_lables, type, ratio):
     main_model= build_model()
     optimizer = torch.optim.SGD(main_model.params(), lr=args.lr_2, momentum=args.momentum, weight_decay=args.weight_decay)
-    
 
-    #print(model)
     if (type==1):
         type = 'uniform'
     elif (type==2):
@@ -145,7 +136,7 @@ def train_MLC(Val_choose, train_datas, train_lables,  test_datas, test_lables, t
     test_loader = Data.DataLoader(dataset=test_data, batch_size=args.batch_size, shuffle=True)
 
 
-    model_root = 'model_saved/Cifar10_warmup_CE_'+str(type)+str(ratio)+'.pth'
+    model_root = './Cifar10_warmup_CE_'+str(type)+str(ratio)+'.pth'
 
     main_model.load_state_dict(torch.load(model_root))
     ## load small validation set
@@ -163,11 +154,9 @@ def train_MLC(Val_choose, train_datas, train_lables,  test_datas, test_lables, t
     plot_step = 100
     for i in tqdm(range(20000)):
         main_model.train()
-        # Line 2 get batch of data
+
         image, labels = next(iter(train_loader))
-        # since validation data is small I just fixed them instead of building an iterator
-        # initialize a dummy network for the meta learning of the weights
-        
+
         meta_net = Wide_ResNet(40, 2, 10)
 
         meta_net.load_state_dict(main_model.state_dict())
@@ -177,7 +166,7 @@ def train_MLC(Val_choose, train_datas, train_lables,  test_datas, test_lables, t
         image = to_var(image, requires_grad=False)
         labels = to_var(labels, requires_grad=False)
         T = to_var(torch.eye(10, 10))
-        # Lines 4 - 5 initial forward pass to compute the initial weighted loss
+
         y_f_hat  = meta_net(image)
 
         pre2 = torch.mm(y_f_hat, T)
@@ -186,11 +175,11 @@ def train_MLC(Val_choose, train_datas, train_lables,  test_datas, test_lables, t
 
         meta_net.zero_grad()
         
-        # Line 6 perform a parameter update
+
         grads = torch.autograd.grad(l_f_meta, (meta_net.params()), create_graph=True)
         meta_net.update_params(1e-3, source_params=grads)
         
-        # Line 8 - 10 2nd forward pass and getting the gradients with respect to epsilon
+
         y_g_hat = meta_net(X_Val)
 
         l_g_meta = F.cross_entropy(y_g_hat,Y_Val)
@@ -216,19 +205,20 @@ def train_MLC(Val_choose, train_datas, train_lables,  test_datas, test_lables, t
 
         if i % plot_step == 0:
             main_model.eval()
+            with torch.no_grad():
 
-            acc = []
-            pre_correct = 0.0
-            for itr, (test_img, test_label) in enumerate(test_loader):
-                test_img = to_var(test_img, requires_grad=False)
-                test_label = to_var(test_label, requires_grad=False)
+                acc = []
+                pre_correct = 0.0
+                for itr, (test_img, test_label) in enumerate(test_loader):
+                    test_img = to_var(test_img, requires_grad=False)
+                    test_label = to_var(test_label, requires_grad=False)
 
-                output = main_model(test_img)
-                pre = torch.max(output, 1)[1]
+                    output = main_model(test_img)
+                    pre = torch.max(output, 1)[1]
 
-                pre_correct = pre_correct + float(torch.sum(pre == test_label))
+                    pre_correct = pre_correct + float(torch.sum(pre == test_label))
 
-            test_acc = (pre_correct / float(10000)) * 100
+                test_acc = (pre_correct / float(10000)) * 100
             if test_acc > best_accuracy:
                 best_accuracy = test_acc
 
