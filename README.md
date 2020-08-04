@@ -9,7 +9,7 @@ Simply run main.py
 # Citing this work
 If you use this code in your work, please cite the accompanying paper:
 
-@inproceedings{wang2020training,
+`@inproceedings{wang2020training,
   
   title={Training Noise-Robust Deep Neural Networks via Meta-Learning},
   
@@ -20,4 +20,4 @@ If you use this code in your work, please cite the accompanying paper:
   pages={4524--4533},
   
   year={2020}
-}
+}`
