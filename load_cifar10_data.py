@@ -90,9 +90,21 @@ class Cifar10_Dataset(Data.Dataset):
             self.train_data = self.train_data.transpose((0, 2, 3, 1))
             
         else:
-            self.test_data, self.test_labels = datas, lables
-            self.test_data = self.test_data.reshape((10000, 3, 32, 32))
-            self.test_data = self.test_data.transpose((0, 2, 3, 1))
+            Noise_list = []
+            for i in range(10000):
+                Noise_list.append(i)
+
+            aa = Val_choose.tolist()
+            cc = list(set(Noise_list).difference(set(Val_choose)))
+
+            dd = np.array(cc)
+            np.random.shuffle(dd)
+            self.test_data1, self.test_labels1 = get_data(False,0,0)
+            self.test_data1 = self.test_data1.reshape((10000, 3, 32, 32))
+            self.test_data1 = self.test_data1.transpose((0, 2, 3, 1))
+
+            self.test_data = self.test_data1[dd, :]
+            self.test_labels = np.array(self.test_labels1)[dd]
         pass
 
     def __getitem__(self, index):
