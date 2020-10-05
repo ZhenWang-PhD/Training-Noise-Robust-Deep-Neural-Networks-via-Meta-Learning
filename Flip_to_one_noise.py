@@ -32,7 +32,7 @@ def flip_to_one_noise(Cifar10_Y, noise_ratio):
         Noise_list.remove(class_number)
 
         noisy_label=int(random.sample(Noise_list, 1)[0])
-        print (len(label_choose_index))
+        #print (len(label_choose_index))
 
         number=0
         for index_label in label_choose_index:
