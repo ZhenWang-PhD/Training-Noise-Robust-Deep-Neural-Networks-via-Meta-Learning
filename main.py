@@ -73,7 +73,7 @@ def train_warm_up(Val_choose, train_datas, train_lables,  test_datas, test_lable
     best_accuracy = 0
 
     plot_step = 100
-    for i in tqdm(range(2000)):
+    for i in tqdm(range(20000)):
         model.train()
 
         image, labels = next(iter(train_loader))
@@ -152,7 +152,7 @@ def train_MLC(Val_choose, train_datas, train_lables,  test_datas, test_lables, t
     best_accuracy = 0
 
     plot_step = 100
-    for i in tqdm(range(20000)):
+    for i in tqdm(range(30000)):
         main_model.train()
 
         image, labels = next(iter(train_loader))
