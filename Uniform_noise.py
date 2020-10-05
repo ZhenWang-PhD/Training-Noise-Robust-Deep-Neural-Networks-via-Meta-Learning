@@ -36,7 +36,7 @@ def uniform_noise(Cifar10_Y, noise_ratio):
 
         noisy_label=Noise_list*ratio
         random.shuffle(noisy_label)
-        print(len(noisy_label))
+        #print(len(noisy_label))
 
 
         number=0
