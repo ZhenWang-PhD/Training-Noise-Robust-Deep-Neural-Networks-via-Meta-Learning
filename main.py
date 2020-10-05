@@ -40,7 +40,7 @@ def to_var(x, requires_grad=True):
 def build_model():
 
     net =Wide_ResNet(40, 2, 10)
-    print(net)
+    #print(net)
 
     if torch.cuda.is_available():
         net.cuda()
