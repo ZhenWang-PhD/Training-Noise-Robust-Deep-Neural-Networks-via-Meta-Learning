@@ -94,7 +94,7 @@ class Cifar10_Dataset(Data.Dataset):
             for i in range(10000):
                 Noise_list.append(i)
 
-            aa = Val_choose.tolist()
+            #aa = Val_choose.tolist()
             cc = list(set(Noise_list).difference(set(Val_choose)))
 
             dd = np.array(cc)
