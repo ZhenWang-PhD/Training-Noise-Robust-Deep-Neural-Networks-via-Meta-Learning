@@ -107,7 +107,7 @@ def train_warm_up(Val_choose, train_datas, train_lables,  test_datas, test_lable
 
                     pre_correct = pre_correct + float(torch.sum(pre == test_label))
 
-                test_acc = (pre_correct / float(10000)) * 100
+                test_acc = (pre_correct / float(train_data.__len__())) * 100
             if test_acc > best_accuracy:
                 best_accuracy = test_acc
                 torch.save(model.state_dict(),save_root)
@@ -218,7 +218,7 @@ def train_MLC(Val_choose, train_datas, train_lables,  test_datas, test_lables, t
 
                     pre_correct = pre_correct + float(torch.sum(pre == test_label))
 
-                test_acc = (pre_correct / float(10000)) * 100
+                test_acc = (pre_correct / float(train_data.__len__())) * 100
             if test_acc > best_accuracy:
                 best_accuracy = test_acc
 
