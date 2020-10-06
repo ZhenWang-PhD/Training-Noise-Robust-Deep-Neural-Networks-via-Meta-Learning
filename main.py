@@ -112,7 +112,7 @@ def train_warm_up(Val_choose, train_datas, train_lables,  test_datas, test_lable
                 best_accuracy = test_acc
                 torch.save(model.state_dict(),save_root)
 
-            print('| Cifar10 ' + 'Baseline type: '+ str(type) + ' ratio:' + str(ratio)+ '% ' + 'Test Best_Test_Acc: %.2f%% Test_Acc@1: %.2f%%' % (best_accuracy, test_acc))
+            print('| Cifar10 ' + 'warmup type: '+ str(type) + ' ratio:' + str(ratio)+ '% ' + 'Test Best_Test_Acc: %.2f%% Test_Acc@1: %.2f%%' % (best_accuracy, test_acc))
 
 
 def train_MLC(Val_choose, train_datas, train_lables,  test_datas, test_lables, type, ratio):
